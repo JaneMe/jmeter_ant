@@ -80,9 +80,9 @@
 
     <!-- 将jtl转换成html测试报告 -->
     <target name="report">
-        <!-- 将jtl转换成html测试报告 -->
+        <!-- 将jtl转换成html详细测试报告 -->
         <xslt in="${jmeter.report.jtlName}" out="${jmeter.report.htmlName}" style="${jmeter.home}/extras/jmeter-results-detail-report_21.xsl" />
-        <!-- 将jtl转换成html测试报告 -->
+        <!-- 将jtl转换成html汇总测试报告 -->
         <xslt in="${jmeter.report.jtlName}" out="${jmeter.report.htmlName2}" style="${jmeter.home}/extras/jmeter.results.shanhe.me.xsl" />
         <!-- 因为上面生成报告的时候，不会将相关的图片也一起拷贝至目标目录，所以，需要手动拷贝 -->
         <copy todir="${jmeter.report.dir}">
