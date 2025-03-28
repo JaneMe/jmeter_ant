@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testResults version="1.2">
+<sample t="5" it="0" lt="0" ct="0" ts="1743149685076" s="true" lb="BeanShell 取样器" rc="200" rm="OK" tn="线程组 1-1" dt="text" by="0" sby="0" ng="1" na="1"/>
+<httpSample t="990" it="0" lt="682" ct="244" ts="1743149685132" s="true" lb="HTTP请求" rc="200" rm="OK" tn="线程组 1-1" dt="text" by="315813" sby="146" ng="1" na="1">
+  <java.net.URL>https://www.163.com/search?keyword=旺财</java.net.URL>
+</httpSample>
+<sample t="1" it="0" lt="0" ct="0" ts="1743149686139" s="true" lb="调试取样器" rc="200" rm="OK" tn="线程组 1-1" dt="text" by="292" sby="0" ng="1" na="1"/>
+
+<httpSample t="544" it="0" lt="426" ct="207" ts="1743149688487" s="true" lb="HTTP请求" rc="200" rm="OK" tn="线程组 1-1" dt="text" by="55661" sby="191" ng="1" na="1">
+  <java.net.URL>https://www.163.com/search?keyword=软件测试工程师</java.net.URL>
+</httpSample>
+
+</testResults>

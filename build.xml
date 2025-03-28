@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="ant-jmeter-test" default="all" basedir=".">
+    <tstamp>
+        <!-- 获取当前时间，格式为：2025-03-14 15:30:00，用于生成报告的文件名 -->
+        <format property="time" pattern="yyyy-MM-dd HH:mm" />
+    </tstamp>
+    <!-- Jmeter安装目录（需要改成自己本地的 Jmeter 安装目录）-->
+    <property name="jmeter.home" value="/Users/jane/main/apache-jmeter-5.6.3" />
+    <!-- 项目根路径（需要改成自己本地的项目根路径）-->
+    <property name="jmeter.root.dir" value="/Users/jane/Documents/Code/JMeter/ant/jmeter_ant" />
+    <!-- ant根路径（需要改成自己本地的 ant 安装目录）-->
+    <property name="ant.home" value="/Users/jane/main/apache-ant-1.10.15" />
+    <!-- 邮件依赖库路径-->
+    <property name="mail.lib.dir" value="${ant.home}/lib" />
+    <!-- 添加邮件任务的定义 -->
+    <path id="ant-mail.classpath">
+        <fileset dir="${mail.lib.dir}">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+    
+    <!-- jmeter生成jtl和html格式的结果报告的路径-->
+    <property name="jmeter.report.dir" value="${jmeter.root.dir}/report" />
+    <!-- jmeter生成html格式的详细报告的路径-->
+    <property name="jmeter.report.dir1" value="${jmeter.root.dir}/report" />
+    <!-- jmeter脚本存放路径-->
+    <property name="jmeter.script.dir" value="${jmeter.root.dir}/script" />
+    <!-- 生成的报告的前缀 -->
+    <property name="ReportName" value="JMeter接口自动化汇总报告" />
+    <property name="ReportName2" value="JMeter接口自动化详细报告" />
+    <!-- 测试报告jtl文件名 -->
+    <property name="jmeter.report.jtlName" value="${jmeter.report.dir}/${ReportName}.jtl" />
+    <!-- 测试报告html文件名 -->
+    <property name="jmeter.report.htmlName" value="${jmeter.report.dir}/${ReportName}.html" />
+    <property name="jmeter.report.htmlName2" value="${jmeter.report.dir}/${ReportName2}.html" />
+    <!-- 测试报告压缩包的路径 -->
+    <property name="jmeter.result.rar.dir" value="${jmeter.root.dir}/rar" />
+    <!-- 测试报告压缩包的文件路径 -->
+    <property name="jmeter.result.rar.name" value="${jmeter.result.rar.dir}/【${time}】${ReportName}.rar" />
+  
+    <!-- 执行所有任务 -->
+    <target name="all">
+        <!-- 清空报告 -->  
+        <antcall target="clear" />
+        <!-- 执行测试 -->
+        <antcall target="test" />
+        <!-- 生成报告 -->
+        <antcall target="report" />
+        <!-- 压缩报告 -->
+        <antcall target="jar" />
+    </target>
+
+    <!-- 每次执行前先删除清空report文件夹，释放空间 -->
+    <target name="clear">
+        <!-- 删除report目录下所有测试报告-->
+        <delete dir="${jmeter.report.dir}" />
+        <!-- 删除rar目录下所有压缩包-->
+        <delete dir="${jmeter.result.rar.dir}" />
+    </target>
+
+    <!-- 执行JMeter测试 -->
+    <target name="test">
+        <!-- 定义jmeter任务 -->
+        <taskdef name="jmeter" classname="org.programmerplanet.ant.taskdefs.jmeter.JMeterTask">
+            <classpath>
+                <!-- 设置jmeter的home目录 -->
+                <pathelement location="${jmeter.home}" />
+                <!-- 设置jmeter的ant插件 -->
+                <pathelement location="${jmeter.home}/extras/ant-jmeter-1.1.1.jar"/>
+            </classpath>
+        </taskdef>
+        <!--Jmeter家目录和放置jtl文件路径-->
+        <jmeter jmeterhome="${jmeter.home}" resultlog="${jmeter.report.jtlName}">
+            <!-- 设置jmeter的保存服务，保存为xml格式 -->
+            <property name="jmeter.save.saveservice.output_format" value="xml" />
+            <!-- 声明要运行的脚本。"*.jmx"指包含此目录下的所有jmeter脚本 -->
+            <testplans dir="${jmeter.script.dir}" includes="*.jmx" />
+        </jmeter>
+    </target>
+
+    <!-- 将jtl转换成html测试报告 -->
+    <target name="report">
+        <!-- 将jtl转换成html测试报告 -->
+        <xslt in="${jmeter.report.jtlName}" out="${jmeter.report.htmlName}" style="${jmeter.home}/extras/jmeter-results-detail-report_21.xsl" />
+        <!-- 将jtl转换成html测试报告 -->
+        <xslt in="${jmeter.report.jtlName}" out="${jmeter.report.htmlName2}" style="${jmeter.home}/extras/jmeter.results.shanhe.me.xsl" />
+        <!-- 因为上面生成报告的时候，不会将相关的图片也一起拷贝至目标目录，所以，需要手动拷贝 -->
+        <copy todir="${jmeter.report.dir}">
+            <fileset dir="${jmeter.home}/extras">
+                <include name="collapse.png" />
+                <include name="expand.png" />
+            </fileset>
+        </copy>
+    </target>
+    
+    <!-- 压缩报告 -->
+    <target name="jar">
+        <!-- 把报告进行压缩打包 -->
+        <jar jarfile="${jmeter.result.rar.name}" basedir="${jmeter.report.dir}"/>
+        <echo message="已创建压缩包: ${jmeter.result.rar.name}" />
+    </target>
+
+    <!-- 发送邮件 -->
+    <target name="sendmail">
+        <!-- 把报告进行压缩打包 -->
+        <jar jarfile="${jmeter.rar.name}" basedir="${jmeter.report.dir}"/>
+
+        <!-- 读取html文件，把文件贴到邮件正文 -->
+        <loadfile property="html" srcFile="${jmeter.report.htmlName}" encoding="UTF-8">
+            <!-- 替换html文件中的变量 -->
+            <filterchain>
+                <expandproperties />
+            </filterchain>
+        </loadfile>
+
+        <!-- 定义邮件任务 -->
+        <taskdef name="mail" classname="org.apache.tools.ant.taskdefs.email.EmailTask">
+            <classpath refid="ant-mail.classpath"/>
+        </taskdef>
+
+        <echo message="开始发送邮件..."/>
+        <!-- 163邮箱发送测试报告 -->
+        <mail
+            mailhost="smtp.163.com"
+            mailport="465"
+            ssl="true"
+            user="zjjmail0903@163.com"
+            password="WNtyGeRzFYViBTbH"
+            subject="JMeter接口测试报告"
+            messagemimetype="text/html"
+            charset="UTF-8"
+            from="zjjmail0903@163.com"
+            tolist="1301511732@qq.com">
+            <message>
+                <![CDATA[
+                    <div style="margin-top: 15px;">
+                        <p>Hi Everyone:</p>
+                        <p style="margin-left: 40px;">This email was sent automatically by ANT.</p>
+                        <p style="margin-left: 40px;">Please check the automation test report by the link below.</p>
+                        <p style="margin-left: 40px;">If there are any questions, please contact with me. Thank you!</p>
+                        <p style="margin-left: 40px;">Attached is a complete test report package.</p>
+                    </div>
+                    <pre> ${html} </pre>
+                    ]]>
+            </message>
+            <!-- 直接使用文件路径作为附件 -->
+            <fileset file="${jmeter.result.rar.name}" />
+        </mail>
+    </target>
+        
+</project>
